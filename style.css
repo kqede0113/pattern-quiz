@@ -149,3 +149,19 @@ main { max-width: 760px; margin: 0 auto; padding: 1rem; }
   .card-q { font-size: 1.05rem; }
   .seg span { font-size: .85rem; }
 }
+
+/* モードが5つでも折り返せる */
+.seg-5 { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 560px) {
+  .seg-5 { grid-template-columns: repeat(5, 1fr); }
+}
+.tag-ex3, .tag-imp, .tag-item {
+  display: inline-block; font-size: .7rem; font-weight: 700;
+  border-radius: 999px; padding: .05em .5em; margin-left: .25em;
+  vertical-align: middle; letter-spacing: .02em;
+}
+.tag-ex3 { background: #ffedd5; color: #9a3412; }
+.tag-imp { background: #fee2e2; color: #991b1b; }
+.tag-item { background: #e8eef6; color: #1f2a44; }
+.card-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-left: .4rem; }
+.card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem; }

@@ -58,7 +58,13 @@
   if (typeof store.settings.shuffle === "boolean") $("opt-shuffle").checked = store.settings.shuffle;
 
   const getMode = () => document.querySelector("input[name=mode]:checked").value;
-  const modeFilter = (c, mode) => mode === "all" ? true : mode === "ng" ? statusOf(c.id) === "ng" : statusOf(c.id) !== "ok";
+  const modeFilter = (c, mode) => {
+    if (mode === "ng") return statusOf(c.id) === "ng";
+    if (mode === "weak") return statusOf(c.id) !== "ok";
+    if (mode === "important") return !!c.important;
+    if (mode === "ex3") return !!c.ex3;
+    return true;
+  };
 
   function renderHome() {
     const counts = { ok: 0, ng: 0, new: 0 };
@@ -75,7 +81,7 @@
       return `<li><label>
         <input type="checkbox" value="${s.id}" ${selected.has(s.id) ? "checked" : ""}>
         <div>
-          <div class="sec-name"><span class="num">${esc(s.num)}</span>${esc(s.short)}${s.written ? '<span class="tag">記述</span>' : ""}</div>
+          <div class="sec-name"><span class="num">${esc(s.num)}</span>${esc(s.short)}${s.written ? '<span class="tag">記述</span>' : ""}${s.cards.some((c)=>c.ex3) ? '<span class="tag-ex3">演習③</span>' : ""}${s.cards.some((c)=>c.important) ? '<span class="tag-imp">重要</span>' : ""}</div>
           <div class="sec-bar"><i class="b-ok" style="width:${(ok / n) * 100}%"></i><i class="b-ng" style="width:${(ng / n) * 100}%"></i></div>
           <div class="sec-stat">${n}問 ・ 覚えた ${ok} ・ まだ ${ng}</div>
         </div></label></li>`;
@@ -142,6 +148,12 @@
     const isW = c.type === "written";
     $("card").classList.toggle("written", isW);
     $("card-sec").textContent = `${c.sec.num}. ${c.sec.short}`;
+    const items = (c.items && c.items.length) ? c.items : (c.sec.num ? [Number(c.sec.num)] : []);
+    const tags = [];
+    if (items.length) tags.push(`<span class="tag-item">項目${items.join("・")}</span>`);
+    if (c.ex3) tags.push('<span class="tag-ex3">演習③</span>');
+    if (c.important) tags.push('<span class="tag-imp">重要</span>');
+    $("card-tags").innerHTML = tags.join("");
     $("card-label").textContent = isW ? `予想記述 ${c.label.replace(/^問題/, "問題 ")}` : c.label;
     $("card-q").innerHTML = md(c.q);
     $("card-a-body").innerHTML = md(c.a);

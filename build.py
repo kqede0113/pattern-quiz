@@ -24,6 +24,31 @@ H2_RE = re.compile(r"^##\s+(.+?)\s*$")
 H1_RE = re.compile(r"^#\s+(.+?)\s*$")
 WRITTEN_KEYS = ("問題", "骨子", "模範解答")
 
+TAG_RE = re.compile(r"[\s　]*※([^\n]+)\s*$")
+
+
+def extract_tags(question):
+    """問題文末尾の「※演習③・重要」などをメタデータに分ける。IDは注釈を除いた本文で決める。"""
+    ex3 = False
+    important = False
+    items = []
+    q = question
+    m = TAG_RE.search(q)
+    if m:
+        q = q[:m.start()].rstrip()
+        for part in re.split(r"[・/／,、]", m.group(1)):
+            part = part.strip()
+            if part in ("演習③", "演習3", "演習３"):
+                ex3 = True
+            elif part == "重要":
+                important = True
+            elif part.startswith("項目"):
+                items.extend(int(n) for n in re.findall(r"\d+", part))
+            elif re.fullmatch(r"\d+", part):
+                items.append(int(part))
+    return q, ex3, important, items
+
+
 
 def card_id(sec_title, question):
     # 問題文ベースのID: source.md を差し替えても、同じ問題なら進捗が引き継がれる
@@ -98,11 +123,23 @@ def parse(text):
         short = re.sub(r"[（(]スライド[^）)]*[）)]", "", name).strip()
         cards = []
         for c in s["cards"]:
-            cid = card_id(s["title"], c["q"])
+            q_clean, ex3, important, items = extract_tags(c["q"])
+            if not items and num.isdigit():
+                items = [int(num)]
+            cid = card_id(s["title"], q_clean)
             if cid in seen:
-                cid = hashlib.sha1((s["title"] + c["q"]).encode()).hexdigest()[:10]
+                cid = hashlib.sha1((s["title"] + q_clean).encode()).hexdigest()[:10]
             seen.add(cid)
-            cards.append({"id": cid, "label": c["label"], "type": c["type"], "q": c["q"], "a": c["a"]})
+            cards.append({
+                "id": cid,
+                "label": c["label"],
+                "type": c["type"],
+                "q": q_clean,
+                "a": c["a"],
+                "ex3": ex3,
+                "important": important,
+                "items": items,
+            })
         out_sections.append({
             "id": "s" + num,
             "num": num,
@@ -129,7 +166,9 @@ def main():
     for w in warnings:
         print("警告:", w, file=sys.stderr)
     nw = sum(1 for s in data["sections"] for c in s["cards"] if c["type"] == "written")
-    print(f"data.js を生成: {len(data['sections'])}節 / {total}問（うち記述 {nw}問）")
+    n_imp = sum(1 for s in data["sections"] for c in s["cards"] if c.get("important"))
+    n_ex3 = sum(1 for s in data["sections"] for c in s["cards"] if c.get("ex3"))
+    print(f"data.js を生成: {len(data['sections'])}節 / {total}問（うち記述 {nw}問、重要 {n_imp}問、演習③ {n_ex3}問）")
     for s in data["sections"]:
         print(f"  {s['num']:>3}. {s['short']}  ({len(s['cards'])}問)")
 

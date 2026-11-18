@@ -21,8 +21,10 @@
 
     <div class="panel">
       <h2>出題する問題</h2>
-      <div class="seg" role="radiogroup" id="mode-group">
+      <div class="seg seg-5" role="radiogroup" id="mode-group">
         <label><input type="radio" name="mode" value="all" checked><span>すべて</span></label>
+        <label><input type="radio" name="mode" value="important"><span>重要だけ</span></label>
+        <label><input type="radio" name="mode" value="ex3"><span>演習③だけ</span></label>
         <label><input type="radio" name="mode" value="weak"><span>苦手だけ<small>（まだ＋未学習）</small></span></label>
         <label><input type="radio" name="mode" value="ng"><span>「まだ」だけ</span></label>
       </div>
@@ -51,6 +53,7 @@
         <li>「覚えた」「まだ」を付けると記録され、「苦手だけ」で復習できます。</li>
         <li>予想記述問題は、入力欄に自分で書いてから「骨子を見る」で模範解答の骨子と比べます。書いた文章も自動保存されます。</li>
         <li>キー操作: スペース/Enter=めくる、→/←=次/前、1 または O=覚えた、2 または X=まだ</li>
+        <li>「重要だけ」は第14回のテスト範囲で優先して復習するとよい問い、「演習③だけ」はタイタニックの生存予測に直結する問いです。カードに項目番号と印が出ます。</li>
         <li>進み具合はこのブラウザ内（localStorage）にだけ保存されます。</li>
       </ul>
       <p class="muted" id="data-info"></p>
@@ -64,6 +67,7 @@
     <article id="card" class="card" tabindex="0" aria-live="polite">
       <div class="card-meta">
         <span id="card-sec"></span>
+        <span id="card-tags" class="card-tags"></span>
         <span id="card-status" class="badge"></span>
       </div>
       <div class="card-label" id="card-label"></div>
